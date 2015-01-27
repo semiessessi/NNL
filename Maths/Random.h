@@ -18,7 +18,7 @@ static inline float WeakRandom( const float fMin = -1.0f, const float fMax = 1.0
     ullXorShift ^= ullXorShift >> 17;
     ullXorShift ^= kullInitialSeed ^ ( kullInitialSeed >> 26 );
     lsaullSeeds[ 1 ] = ullXorShift;
-    return fMin + ( fMax - fMin ) * static_cast< float >( static_cast< double >( ullXorShift + kullInitialSeed ) / static_cast< double >( 1ULL << 63 ) );
+    return fMin + ( fMax - fMin ) * static_cast< float >( static_cast< double >( ullXorShift + kullInitialSeed ) / static_cast< double >( ~0ULL ) );
 }
 
 }
