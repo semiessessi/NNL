@@ -3,6 +3,8 @@
 #ifndef NEURON_H
 #define NEURON_H
 
+#include "Maths/Random.h"
+
 namespace NNL
 {
 
@@ -21,7 +23,7 @@ protected:
 
     void BackPropogate( const float /*fPotential*/, const float /*fLearningRate*/ ) const {}
 
-    //static float SummingFunction( const float fSum ) { return fSum; }
+    static float SummingFunction( const float fSum ) { return fSum; }
     static float InitialWeight( const int /*iInitialWeight*/ ) { return 0.5f; }
     static float InitialBias() { return 0.0f; }
 
@@ -64,16 +66,7 @@ public:
 
     void Cycle()
     {
-        float fSum = mfBias;
-        for( int i = 0; i < iInputCount; ++i )
-        {
-            if( mapxInputs[ i ] )
-            {
-                fSum += mapxInputs[ i ]->GetResult() * mafWeights[ i ];
-            }
-        }
-
-        mfAxonPotential = static_cast< Implementation* >( this )->SummingFunction( fSum );
+        mfAxonPotential = EvaluateAxon( mafWeights );
     }
 
     void BackCycle( const float fPotential, const float fLearningRate )
@@ -81,7 +74,46 @@ public:
         static_cast< Implementation* >( this )->BackPropogate( fPotential, fLearningRate );
     }
 
+    void BackPropogate( const float fPotential, const float /*fLearningRate*/ )
+    {
+        RandomBackPropogator( fPotential );
+    }
+
 protected:
+
+    float EvaluateAxon( const float* pfWeights )
+    {
+        float fSum = mfBias;
+        for( int i = 0; i < iInputCount; ++i )
+        {
+            if( mapxInputs[ i ] )
+            {
+                fSum += mapxInputs[ i ]->GetResult() * pfWeights[ i ];
+            }
+        }
+
+        return static_cast< const Implementation* >( this )->SummingFunction( fSum );
+    }
+
+    void RandomBackPropogator( const float fPotential )
+    {
+        // pick a random set of weights
+        float afWeights[ iInputCount ? iInputCount : 1 ];
+        for( int i = 0; i < iInputCount; ++i )
+        {
+            afWeights[ i ] = mafWeights[ i ] + WeakRandom();
+        }
+
+        // if the work better, keep them
+        const float fNewPotential = EvaluateAxon( afWeights );
+        if( fabsf( fNewPotential - fPotential ) < fabsf( mfAxonPotential - fPotential ) )
+        {
+            for( int i = 0; i < iInputCount; ++i )
+            {
+                mafWeights[ i ] = afWeights[ i ];
+            }
+        }
+    }
 
     NeuronBase* mapxInputs[ iInputCount ? iInputCount : 1 ];
     float mafWeights[ iInputCount ? iInputCount : 1 ];

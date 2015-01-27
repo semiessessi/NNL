@@ -51,6 +51,7 @@ private:
         mfBias += ( fPotential - mfAxonPotential ) * fLearningRate
             * ( 1.0f / static_cast< float >( iInputCount ) );
     }
+
 };
 
 }
