@@ -24,7 +24,7 @@ protected:
     void BackPropogate( const float /*fPotential*/, const float /*fLearningRate*/ ) const {}
 
     static float SummingFunction( const float fSum ) { return fSum; }
-    static float InitialWeight( const int /*iInitialWeight*/ ) { return 0.5f; }
+    static float InitialWeight( const int /*iInitialWeight*/ ) { return WeakRandom(); }
     static float InitialBias() { return 0.0f; }
 
     float mfAxonPotential;
