@@ -101,7 +101,7 @@ protected:
         float afWeights[ iInputCount ? iInputCount : 1 ];
         for( int i = 0; i < iInputCount; ++i )
         {
-            afWeights[ i ] = mafWeights[ i ] + fLearningRate * WeakRandom();
+            afWeights[ i ] = mafWeights[ i ] + /*fLearningRate **/ WeakRandom();
         }
 
         // if the work better, keep them
