@@ -30,26 +30,7 @@ private:
 
     void BackPropogate( const float fPotential, const float fLearningRate )
     {
-        // adjust weights
-        for( int i = 0; i < iInputCount; ++i )
-        {
-            if( mapxInputs[ i ]->GetResult() != 0.0f )
-            {
-                mafWeights[ i ] += ( fPotential - mfAxonPotential )
-                    * fLearningRate / ( static_cast< float >( iInputCount ) * mapxInputs[ i ]->GetResult() );
-            }
-
-            if( mafWeights[ i ] != 0.0f )
-            {
-                const float fBetterInput = mapxInputs[ i ]->GetResult() + ( fPotential - mfAxonPotential )
-                    * fLearningRate / ( static_cast< float >( iInputCount ) * mafWeights[ i ] );
-                mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
-            }
-        }
-
-        // adjust bias
-        mfBias += ( fPotential - mfAxonPotential ) * fLearningRate
-            * ( 1.0f / static_cast< float >( iInputCount ) );
+        LinearBackPropogator( fPotential, fLearningRate );
     }
 
 };

@@ -74,9 +74,9 @@ public:
         static_cast< Implementation* >( this )->BackPropogate( fPotential, fLearningRate );
     }
 
-    void BackPropogate( const float fPotential, const float /*fLearningRate*/ )
+    void BackPropogate( const float fPotential, const float fLearningRate )
     {
-        RandomBackPropogator( fPotential );
+        RandomBackPropogator( fPotential, fLearningRate );
     }
 
 protected:
@@ -95,24 +95,56 @@ protected:
         return static_cast< const Implementation* >( this )->SummingFunction( fSum );
     }
 
-    void RandomBackPropogator( const float fPotential )
+    void RandomBackPropogator( const float fPotential, const float fLearningRate )
     {
         // pick a random set of weights
         float afWeights[ iInputCount ? iInputCount : 1 ];
         for( int i = 0; i < iInputCount; ++i )
         {
-            afWeights[ i ] = mafWeights[ i ] + WeakRandom();
+            afWeights[ i ] = mafWeights[ i ] + fLearningRate * WeakRandom();
         }
 
         // if the work better, keep them
         const float fNewPotential = EvaluateAxon( afWeights );
-        if( fabsf( fNewPotential - fPotential ) < fabsf( mfAxonPotential - fPotential ) )
+        const bool bRandomIsBetter = fabsf( fPotential - fNewPotential ) < fabsf( fPotential - mfAxonPotential );
+        if( bRandomIsBetter )
         {
             for( int i = 0; i < iInputCount; ++i )
             {
                 mafWeights[ i ] = afWeights[ i ];
             }
         }
+
+        const float fMinPotentialDifference = fPotential - ( bRandomIsBetter ? fNewPotential : mfAxonPotential );
+        for( int i = 0; i < iInputCount; ++i )
+        {
+            const float fBetterInput = fMinPotentialDifference / mafWeights[ i ];
+            mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
+        }
+    }
+
+    void LinearBackPropogator( const float fPotential, const float fLearningRate )
+    {
+        // adjust weights
+        for( int i = 0; i < iInputCount; ++i )
+        {
+            if( mapxInputs[ i ]->GetResult( ) != 0.0f )
+            {
+                mafWeights[ i ] += ( fPotential - mfAxonPotential )
+                    * fLearningRate / ( static_cast< float >( iInputCount )* mapxInputs[ i ]->GetResult( ) );
+            }
+
+            if( mafWeights[ i ] != 0.0f )
+            {
+                const float fBetterInput = mapxInputs[ i ]->GetResult( ) + ( fPotential - mfAxonPotential )
+                    * fLearningRate / ( static_cast< float >( iInputCount )* mafWeights[ i ] );
+                mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
+            }
+        }
+
+        // adjust bias
+        mfBias += ( fPotential - mfAxonPotential ) * fLearningRate
+            * ( 1.0f / static_cast< float >( iInputCount ) );
     }
 
     NeuronBase* mapxInputs[ iInputCount ? iInputCount : 1 ];
