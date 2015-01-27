@@ -12,7 +12,10 @@ class NeuronBase
 public:
 
     virtual void CycleVirtual() = 0;
-    virtual void BackCycleVirtual( const float fPotential, const float fLearningRate ) = 0;
+    virtual void BackCycleVirtual( const float, const float ) = 0;
+    virtual void SetInputVirtual( const int iIndex, NeuronBase* const pxInput ) = 0;
+
+    float& GetResult() { return mfAxonPotential; }
 
 protected:
 
@@ -21,6 +24,8 @@ protected:
     //static float SummingFunction( const float fSum ) { return fSum; }
     static float InitialWeight( const int /*iInitialWeight*/ ) { return 0.5f; }
     static float InitialBias() { return 0.0f; }
+
+    float mfAxonPotential;
 
 };
 
@@ -39,7 +44,7 @@ public:
         {
             for( int i = 0; i < iInputCount; ++i )
             {
-                mapfInputs[ i ] = 0;
+                mapxInputs[ i ] = 0;
                 mafWeights[ i ] = Implementation::InitialWeight( i );
             }
 
@@ -50,20 +55,21 @@ public:
     template< int iOtherInputCount, class OtherImplementation >
     void ConnectAtIndex( const int iIndex, Neuron< iOtherInputCount, OtherImplementation >& xInputNeuron )
     {
-        mapfInputs[ iIndex ] = &( xInputNeuron.GetResult() );
+        mapxInputs[ iIndex ] = &xInputNeuron;
     }
 
     virtual void CycleVirtual() { Cycle(); }
     virtual void BackCycleVirtual( const float fPotential, const float fLearningRate ) { BackCycle( fPotential, fLearningRate ); }
+    virtual void SetInputVirtual( const int iIndex, NeuronBase* const pxInput ) { mapxInputs[ iIndex ] = pxInput; }
 
     void Cycle()
     {
         float fSum = mfBias;
         for( int i = 0; i < iInputCount; ++i )
         {
-            if( mapfInputs[ i ] )
+            if( mapxInputs[ i ] )
             {
-                fSum += *( mapfInputs[ i ] ) * mafWeights[ i ];
+                fSum += mapxInputs[ i ]->GetResult() * mafWeights[ i ];
             }
         }
 
@@ -75,14 +81,11 @@ public:
         static_cast< Implementation* >( this )->BackPropogate( fPotential, fLearningRate );
     }
 
-    float& GetResult() { return mfAxonPotential; }
-
 protected:
 
-    float* mapfInputs[ iInputCount ? iInputCount : 1 ];
+    NeuronBase* mapxInputs[ iInputCount ? iInputCount : 1 ];
     float mafWeights[ iInputCount ? iInputCount : 1 ];
     float mfBias;
-    float mfAxonPotential;
 
 };
 

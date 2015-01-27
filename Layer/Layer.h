@@ -38,6 +38,9 @@ public:
         }
     }
 
+    NeuronBase* GetNeuron( const int iIndex ) { return mapxNeurons[ iIndex ]; }
+    int GetNeuronCount() const { return static_cast< int >( mapxNeurons.size() ); }
+
 private:
 
     std::vector< NeuronBase* > mapxNeurons;

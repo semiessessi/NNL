@@ -22,12 +22,20 @@ public:
 
     void AddLayer( Layer& xLayer )
     {
-        //if( mapxLayers.size() > 0 )
-        //{
-            //Layer& xPrevious = *( mapxLayers.back() );
+        if( mapxLayers.size() > 0 )
+        {
+            Layer& xPrevious = *( mapxLayers.back() );
             // connect all the neurons to each other
-            //for( int i = 0;  )
-        //}
+            for( int i = 0; i < xLayer.GetNeuronCount(); ++i )
+            {
+                for( int j = 0; j < xPrevious.GetNeuronCount(); ++j )
+                {
+                    NeuronBase* pxNew = xLayer.GetNeuron( i );
+                    NeuronBase* pxOld = xPrevious.GetNeuron( j );
+                    pxNew->SetInputVirtual( j, pxOld );
+                }
+            }
+        }
         mapxLayers.push_back( &xLayer );
     }
 
@@ -41,10 +49,7 @@ public:
 
     void BackCycle( const float fResult, const float fLearningRate )
     {
-        for( int i = 0; i < static_cast< int >( mapxLayers.size() ); ++i )
-        {
-            mapxLayers[ i ]->BackCycle( fResult, fLearningRate );
-        }
+        mapxLayers.back()->BackCycle( fResult, fLearningRate );
     }
 
 private:

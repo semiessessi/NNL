@@ -26,15 +26,25 @@ public:
 
 private:
 
-    static float SummingFunction( const float fSum ) { return HeavisideStep( fSum ); }
+    static float SummingFunction( const float fSum ) { return 2.0f * HeavisideStep( fSum ) - 1.0f; }
 
     void BackPropogate( const float fPotential, const float fLearningRate )
     {
         // adjust weights
         for( int i = 0; i < iInputCount; ++i )
         {
-            mafWeights[ i ] += ( fPotential - mfAxonPotential ) * fLearningRate
-                * ( 1.0f / ( static_cast< float >( iInputCount ) * *( mapfInputs[ i ] ) ) );
+            if( mapxInputs[ i ]->GetResult() != 0.0f )
+            {
+                mafWeights[ i ] += ( fPotential - mfAxonPotential )
+                    * fLearningRate / ( static_cast< float >( iInputCount ) * mapxInputs[ i ]->GetResult() );
+            }
+
+            if( mafWeights[ i ] != 0.0f )
+            {
+                const float fBetterInput = mapxInputs[ i ]->GetResult() + ( fPotential - mfAxonPotential )
+                    * fLearningRate / ( static_cast< float >( iInputCount ) * mafWeights[ i ] );
+                mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
+            }
         }
 
         // adjust bias
