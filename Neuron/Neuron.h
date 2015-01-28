@@ -21,7 +21,7 @@ public:
 
 protected:
 
-    void BackPropogate( const float /*fPotential*/, const float /*fLearningRate*/ ) const {}
+    void BackPropagate( const float /*fPotential*/, const float /*fLearningRate*/ ) const {}
 
     static float SummingFunction( const float fSum ) { return fSum; }
     static float InitialWeight( const int /*iInitialWeight*/ ) { return WeakRandom(); }
@@ -71,12 +71,12 @@ public:
 
     void BackCycle( const float fPotential, const float fLearningRate )
     {
-        static_cast< Implementation* >( this )->BackPropogate( fPotential, fLearningRate );
+        static_cast< Implementation* >( this )->BackPropagate( fPotential, fLearningRate );
     }
 
-    void BackPropogate( const float fPotential, const float fLearningRate )
+    void BackPropagate( const float fPotential, const float fLearningRate )
     {
-        RandomBackPropogator( fPotential, fLearningRate );
+        RandomBackPropagator( fPotential, fLearningRate );
     }
 
 protected:
@@ -95,7 +95,7 @@ protected:
         return static_cast< const Implementation* >( this )->SummingFunction( fSum );
     }
 
-    void RandomBackPropogator( const float fPotential, const float fLearningRate )
+    void RandomBackPropagator( const float fPotential, const float fLearningRate )
     {
         // pick a random set of weights
         float afWeights[ iInputCount ? iInputCount : 1 ];
@@ -123,7 +123,7 @@ protected:
         }
     }
 
-    void LinearBackPropogator( const float fPotential, const float fLearningRate )
+    void LinearBackPropagator( const float fPotential, const float fLearningRate )
     {
         // adjust weights
         for( int i = 0; i < iInputCount; ++i )

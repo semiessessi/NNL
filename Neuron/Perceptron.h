@@ -9,6 +9,7 @@
 
 namespace NNL
 {
+
 template< int iInputCount >
 class Perceptron
 : public Neuron< iInputCount, Perceptron< iInputCount > >
@@ -28,9 +29,9 @@ private:
 
     static float SummingFunction( const float fSum ) { return 2.0f * HeavisideStep( fSum ) - 1.0f; }
 
-    void BackPropogate( const float fPotential, const float fLearningRate )
+    void BackPropagate( const float fPotential, const float fLearningRate )
     {
-        LinearBackPropogator( fPotential, fLearningRate );
+        LinearBackPropagator( fPotential, fLearningRate );
     }
 
 };
