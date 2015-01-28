@@ -30,7 +30,7 @@ private:
 
     void BackPropogate( const float fPotential, const float fLearningRate )
     {
-        LinearBackPropogator( fPotential, fLearningRate );
+        this->LinearBackPropogator( fPotential, fLearningRate );
     }
 
 };

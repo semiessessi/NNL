@@ -8,9 +8,13 @@
 namespace NNL
 {
 
-static inline float WeakRandom( const float fMin = -1.0f, const float fMax = 1.0f )
+static inline unsigned long long WeakRandomInt()
 {
-    static unsigned long long lsaullSeeds[ 2 ] = { time( 0 ), time( 0 ) ^ 516527181 };
+    static unsigned long long lsaullSeeds[ 2 ] =
+    {
+        static_cast< unsigned long long >( time( 0 ) ),
+        static_cast< unsigned long long >( time( 0 ) ^ 516527181 )
+    };
     static unsigned long long ullXorShift = lsaullSeeds[ 0 ];
     static const unsigned long long kullInitialSeed = lsaullSeeds[ 1 ];
     lsaullSeeds[ 0 ] = kullInitialSeed;
@@ -18,7 +22,12 @@ static inline float WeakRandom( const float fMin = -1.0f, const float fMax = 1.0
     ullXorShift ^= ullXorShift >> 17;
     ullXorShift ^= kullInitialSeed ^ ( kullInitialSeed >> 26 );
     lsaullSeeds[ 1 ] = ullXorShift;
-    return fMin + ( fMax - fMin ) * static_cast< float >( static_cast< double >( ullXorShift + kullInitialSeed ) / static_cast< double >( ~0ULL ) );
+    return ullXorShift + kullInitialSeed;
+}
+    
+static inline float WeakRandom( const float fMin = -1.0f, const float fMax = 1.0f )
+{
+    return fMin + ( fMax - fMin ) * static_cast< float >( static_cast< double >( WeakRandomInt() ) / static_cast< double >( ~0ULL ) );
 }
 
 }
