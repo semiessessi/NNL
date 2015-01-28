@@ -5,6 +5,8 @@
 
 #include "Maths/Random.h"
 
+#include <cmath>
+
 namespace NNL
 {
 
@@ -38,6 +40,8 @@ class Neuron
 : public NeuronBase
 {
 
+    friend Implementation;
+    
 public:
 
     Neuron( const bool bInitialise = true )
