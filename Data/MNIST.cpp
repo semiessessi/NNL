@@ -4,7 +4,13 @@
 
 #include <cstdio>
 
+#ifdef _WIN32
+#include <WinSock2.h>
+
+#pragma comment( lib, "ws2_32" )
+#else
 #include <arpa/inet.h>
+#endif
 
 namespace NNL
 {
