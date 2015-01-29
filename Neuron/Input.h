@@ -26,6 +26,11 @@ public:
     void SetInput( float* const pfValue ) { mpfValue = pfValue; }
 
 private:
+    
+    void BackPropagate( const float, const float )
+    {
+        // SE - NOTE: how can we do this?!?! nothing to learn here...
+    }
 
     float SummingFunction( const float ) const { return *mpfValue; }
 
