@@ -95,10 +95,7 @@ protected:
         float fSum = mfBias;
         for( int i = 0; i < iInputCount; ++i )
         {
-            if( mapxInputs[ i ] )
-            {
-                fSum += mapxInputs[ i ]->GetResult() * pfWeights[ i ];
-            }
+            fSum += mapxInputs[ i ]->GetResult() * pfWeights[ i ];
         }
         
         return fSum;
