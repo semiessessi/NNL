@@ -21,6 +21,15 @@ public:
     }
 
     void AddNeuron( NeuronBase& xNeuron ) { mapxNeurons.push_back( &xNeuron ); }
+    
+    template< class NeuronType >
+    void AddNeurons( NeuronType* const pxNeurons, const int iCount )
+    {
+        for( int i = 0; i < iCount; ++i )
+        {
+            AddNeuron( pxNeurons[ i ] );
+        }
+    }
 
     void Cycle()
     {
