@@ -3,6 +3,9 @@
 #include "MNIST.h"
 
 #include <cstdio>
+
+#include <arpa/inet.h>
+
 namespace NNL
 {
     MNIST_Image* LoadMNISTImages( const char* const szPath )
@@ -13,6 +16,7 @@ namespace NNL
         {
             unsigned int uMagic = 0;
             fread( &uMagic, sizeof( unsigned int ), 1, pxFile );
+            uMagic = ntohl( uMagic );
             if( uMagic != 2051 )
             {
                 return pxReturnValue;
@@ -20,15 +24,18 @@ namespace NNL
             
             unsigned int uCount = 0;
             fread( &uCount, sizeof( unsigned int ), 1, pxFile );
+            uCount = ntohl( uCount );
             pxReturnValue = new MNIST_Image[ uCount ];
             
             fread( &uMagic, sizeof( unsigned int ), 1, pxFile );
+            uMagic = ntohl( uMagic );
             if( uMagic != 28 )
             {
                 return pxReturnValue;
             }
             
             fread( &uMagic, sizeof( unsigned int ), 1, pxFile );
+            uMagic = ntohl( uMagic );
             if( uMagic != 28 )
             {
                 return pxReturnValue;
@@ -55,6 +62,7 @@ namespace NNL
         {
             unsigned int uMagic = 0;
             fread( &uMagic, sizeof( unsigned int ), 1, pxFile );
+            uMagic = ntohl( uMagic );
             if( uMagic != 2049 )
             {
                 return pxReturnValue;
@@ -62,6 +70,7 @@ namespace NNL
             
             unsigned int uCount = 0;
             fread( &uCount, sizeof( unsigned int ), 1, pxFile );
+            uCount = ntohl( uCount );
             
             pxReturnValue = new MNIST_Label[ uCount ];
             fread( pxReturnValue, sizeof( MNIST_Label ), uCount, pxFile );
