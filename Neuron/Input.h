@@ -16,12 +16,14 @@ class Input
 
 public:
 
-    Input( float* const pfValue )
+    Input( float* const pfValue = 0 )
     : Neuron< 0, Input >( false )
     , mpfValue( pfValue )
     {
 
     }
+    
+    void SetInput( float* const pfValue ) { mpfValue = pfValue; }
 
 private:
 
