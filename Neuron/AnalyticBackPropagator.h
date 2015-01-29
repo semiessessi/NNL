@@ -32,21 +32,25 @@ private:
 
     void BackPropagate( const float fPotential, const float fLearningRate )
     {
-        const float fDiff = fPotential - mfAxonPotential;
+        const float fDiff = fPotential - this->mfAxonPotential;
+        const float fOriginalSum = this->EvaluateSum( this->mafWeights );
+        const float fDerivative = static_cast< Implementation* >( this )->DerivativeSummingFunction( fOriginalSum );
+        const float fErrorSignal = fDiff * fDerivative;
         for( int i = 0; i < iInputCount; ++i )
         {
             // dP/dw[i] = dP/du du/dw[ i ] = S'( w[ i ] x[ i ] + c ) x[ i ]
-            mafWeights[ i ] -= fLearningRate * static_cast< Implementation* >( this )->DerivativeSummingFunction( fPotential ) * mapxInputs[ i ]->GetResult();
+            this->mafWeights[ i ] += fLearningRate * fErrorSignal / this->mapxInputs[ i ]->GetResult();
         }
 
         // dP/db = dP/du du/db = S'( b + c )
-        mfBias -= fLearningRate * static_cast< Implementation* >( this )->DerivativeSummingFunction( fPotential );
+        this->mfBias += fLearningRate * fErrorSignal;
 
         for( int i = 0; i < iInputCount; ++i )
         {
-            const float fBetterInput = mapxInputs[ i ]->GetResult() + fDiff / mafWeights[ i ];
+            const float fBetterInput = this->mapxInputs[ i ]->GetResult()
+                + fErrorSignal / this->mafWeights[ i ];
             
-            mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
+            this->mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
         }
     }
 
