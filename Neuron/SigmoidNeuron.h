@@ -23,12 +23,12 @@ private:
 
     static float SummingFunction( const float fSum )
     {
-        return Sigmoid( fSum );
+        return 2.0f * Sigmoid( fSum ) - 1.0f;
     }
 
     static float DerivativeSummingFunction( const float fValue )
     {
-        return SigmoidDerivative( fValue );
+        return 2.0f * SigmoidDerivative( fValue );
     }
 
 };
