@@ -87,6 +87,11 @@ protected:
 
     float EvaluateAxon( const float* pfWeights )
     {
+        return static_cast< const Implementation* >( this )->SummingFunction( EvaluateSum( pfWeights ) );
+    }
+    
+    float EvaluateSum( const float* pfWeights )
+    {
         float fSum = mfBias;
         for( int i = 0; i < iInputCount; ++i )
         {
@@ -95,8 +100,8 @@ protected:
                 fSum += mapxInputs[ i ]->GetResult() * pfWeights[ i ];
             }
         }
-
-        return static_cast< const Implementation* >( this )->SummingFunction( fSum );
+        
+        return fSum;
     }
 
     void RandomBackPropagator( const float fPotential, const float fLearningRate )
@@ -130,18 +135,20 @@ protected:
     void LinearBackPropagator( const float fPotential, const float fLearningRate )
     {
         // adjust weights
+        const float fDiff = fPotential - mfAxonPotential;
+        const float fLearningRatedDiff = fLearningRate * fDiff;
         for( int i = 0; i < iInputCount; ++i )
         {
             if( mapxInputs[ i ]->GetResult( ) != 0.0f )
             {
-                mafWeights[ i ] += ( fPotential - mfAxonPotential )
-                    * fLearningRate / ( static_cast< float >( iInputCount )* mapxInputs[ i ]->GetResult( ) );
+                mafWeights[ i ] += fLearningRatedDiff
+                    / mapxInputs[ i ]->GetResult();
             }
 
             if( mafWeights[ i ] != 0.0f )
             {
-                const float fBetterInput = mapxInputs[ i ]->GetResult( ) + ( fPotential - mfAxonPotential )
-                    * fLearningRate / ( static_cast< float >( iInputCount )* mafWeights[ i ] );
+                const float fBetterInput = mapxInputs[ i ]->GetResult()
+                    + fLearningRatedDiff / mafWeights[ i ];
                 mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
             }
         }
