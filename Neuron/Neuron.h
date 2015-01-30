@@ -28,7 +28,7 @@ protected:
     static float SummingFunction( const float fSum ) { return fSum; }
     static float DerivativeSummingFunction( const float ) { return 1.0f; }
     static float InitialWeight( const int /*iInitialWeight*/ ) { return WeakRandom(); }
-    static float InitialBias() { return 0.0f; }
+    static float InitialBias() { return WeakRandom(); }
 
     float mfAxonPotential;
 
