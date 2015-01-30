@@ -26,6 +26,7 @@ protected:
     void BackPropagate( const float /*fPotential*/, const float /*fLearningRate*/ ) const {}
 
     static float SummingFunction( const float fSum ) { return fSum; }
+    static float DerivativeSummingFunction( const float ) { return 1.0f; }
     static float InitialWeight( const int /*iInitialWeight*/ ) { return WeakRandom(); }
     static float InitialBias() { return 0.0f; }
 
@@ -90,6 +91,7 @@ protected:
         return static_cast< const Implementation* >( this )->SummingFunction( EvaluateSum( pfWeights ) );
     }
     
+    // SE - NOTE: this is a hotspot on the critical path
     float EvaluateSum( const float* pfWeights )
     {
         float fSum = mfBias;
@@ -124,7 +126,7 @@ protected:
         const float fMinPotentialDifference = fPotential - ( bRandomIsBetter ? fNewPotential : mfAxonPotential );
         for( int i = 0; i < iInputCount; ++i )
         {
-            const float fBetterInput = fMinPotentialDifference / mafWeights[ i ];
+            const float fBetterInput = mapxInputs[ i ]->GetResult() + ( fMinPotentialDifference / mafWeights[ i ] );
             mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
         }
     }
