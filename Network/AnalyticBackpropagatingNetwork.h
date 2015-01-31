@@ -52,11 +52,21 @@ public:
         return mapfPotentials[ iLayerCount - 1 ];
     }
 
-    void BackPropagate( const float* const pfCorrectOutputs, const float fLearningRate, float( *const pfnSummingFunction )( const float ), float( *const pfnDerivativeSummingFunction )( const float ) )
+    void BackPropagate( const float* const pfCorrectOutputs, const float fLearningRate, float( *const pfnDerivativeSummingFunction )( const float ) )
     {
-        // start from the last layer...
+        // clear the error signals
         const int iLastLayer = iLayerCount - 1;
         const int iLastLayerInputCount = GetInputCount( iLastLayer );
+
+        for( int i = 0; i < iLayerCount; ++i )
+        {
+            for( int j = 0; j < GetNeuronCount( i ); ++j )
+            {
+                mapfErrorSignals[ i ][ j ] = 0.0f;
+            }
+        }
+
+        // start from the last layer...
         for( int i = 0; i < GetNeuronCount( iLastLayer ); ++i )
         {
             const float fDiff = pfCorrectOutputs[ i ] - mapfPotentials[ iLastLayer ][ i ];
@@ -66,18 +76,21 @@ public:
             for( int j = 0; j < iLastLayerInputCount; ++j )
             {
                 // dP/dw[i] = dP/du du/dw[ i ] = S'( w[ i ] x[ i ] + c ) x[ i ]
-                mapfWeights[ iLastLayer ][ j + i * iInputCount ] += fLearningRate * mapfErrorSignals[ iLastLayer ][ i ] * mapfPotentials[ iLastLayer - 1 ];
+                mapfWeights[ iLastLayer ][ j + i * iInputCount ] += fLearningRate * mapfErrorSignals[ iLastLayer ][ i ] * mapfPotentials[ iLastLayer - 1 ][ j ];
             }
 
             // dP/db = dP/du du/db = S'( b + c )
-            mapfmfBiases[ iLastLayer ][ i ] += fLearningRate * mapfErrorSignals[ iLastLayer ][ i ];
+            mapfBiases[ iLastLayer ][ i ] += fLearningRate * mapfErrorSignals[ iLastLayer ][ i ];
 
-            mapfErrorSignals[ iLastLayer ][ i ] *= mapfWeights[ iLastLayer ][ j + i * iLastLayerInputCount ];
+            for( int j = 0; j < iLastLayerInputCount; ++j )
+            {
+                mapfErrorSignals[ iLastLayer - 1 ][ j ] += mapfErrorSignals[ iLastLayer ][ i ] * mapfWeights[ iLastLayer ][ j + i * iInputCount ];
+            }
         }
         // then go back through the rest
         for( int i = iLastLayer - 1; i > 0; --i )
         {
-            BackPropagateLayer( i, fLearningRate, pfnSummingFunction, pfnDerivativeSummingFunction );
+            BackPropagateLayer( i, fLearningRate, pfnDerivativeSummingFunction );
         }
 
         // then finally the first layer.
@@ -136,50 +149,28 @@ protected:
         }
     }
 
-    void BackPropagateLayer( const int iLayer, const float fLearningRate, float( *const pfnSummingFunction )( const float ), float( *const pfnDerivativeSummingFunction )( const float ) )
+    void BackPropagateLayer( const int iLayer, const float fLearningRate, float( *const pfnDerivativeSummingFunction )( const float ) )
     {
-        /*
-        const float fDiff = fPotential - this->mfAxonPotential;
-        const float fOriginalSum = this->EvaluateSum( this->mafWeights );
-        const float fDerivative = static_cast< Implementation* >( this )->DerivativeSummingFunction( fOriginalSum );
-        const float fErrorSignal = fDiff * fDerivative;
-
-        // SE: so, something that mystifies me is multiplying by the result/weight
-        // instead of dividing... but it does work in practice
-        for( int i = 0; i < iInputCount; ++i )
-        {
-        // dP/dw[i] = dP/du du/dw[ i ] = S'( w[ i ] x[ i ] + c ) x[ i ]
-        this->mafWeights[ i ] += fLearningRate * fErrorSignal * this->mapxInputs[ i ]->GetResult( );
-        }
-
-        // dP/db = dP/du du/db = S'( b + c )
-        this->mfBias += fLearningRate * fErrorSignal;
-
-        for( int i = 0; i < iInputCount; ++i )
-        {
-        const float fBetterInput = this->mapxInputs[ i ]->GetResult( )
-        + fErrorSignal * this->mafWeights[ i ];
-
-        this->mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
-        }
-        */
-
         for( int i = 0; i < GetNeuronCount( iLayer ); ++i )
         {
             const float fDiff = mapfErrorSignals[ iLayer + 1 ][ i ];
             const float fOriginalSum = mapfSums[ iLayer ][ i ];
             const float fDerivative = pfnDerivativeSummingFunction( fOriginalSum );
+            const int iLayerInputCount = GetInputCount( iLayer );
             mapfErrorSignals[ iLayer ][ i ] = fDiff * fDerivative;
-            for( int j = 0; j < GetInputCount( iLastLayer ); ++j )
+            for( int j = 0; j < iLayerInputCount; ++j )
             {
                 // dP/dw[i] = dP/du du/dw[ i ] = S'( w[ i ] x[ i ] + c ) x[ i ]
-                mapfWeights[ iLastLayer ][ j + i * iInputCount ] += fLearningRate * mapfErrorSignals[ iLayer ][ i ] * mapfPotentials[ iLayer - 1 ];
+                mapfWeights[ iLayer ][ j + i * iLayerInputCount ] += fLearningRate * mapfErrorSignals[ iLayer ][ i ] * mapfPotentials[ iLayer - 1 ][ j ];
             }
 
             // dP/db = dP/du du/db = S'( b + c )
-            mapfmfBiases[ iLayer ][ i ] += fLearningRate * mapfErrorSignals[ iLayer ][ i ];
+            mapfBiases[ iLayer ][ i ] += fLearningRate * mapfErrorSignals[ iLayer ][ i ];
 
-            mapfErrorSignals[ iLayer ][ i ] *= mapfWeights[ iLayer ][ j + i * iInputCount ];
+            for( int j = 0; j < iLayerInputCount; ++j )
+            {
+                mapfErrorSignals[ iLayer - 1 ][ j ] += mapfErrorSignals[ iLayer ][ i ] * mapfWeights[ iLayer ][ j + i * iLayerInputCount ];
+            }
         }
     }
 
@@ -213,7 +204,7 @@ protected:
 
     void AllocateWeights()
     {
-        for( int i = 0; i M iLayerCount; ++i )
+        for( int i = 0; i < iLayerCount; ++i )
         {
             mapfWeights[ i ] = new float[ GetWeightCount( i ) ];
             mapfBiases[ i ] = new float[ GetNeuronCount( i ) ];
@@ -222,7 +213,7 @@ protected:
 
     void AllocatePotentials()
     {
-        for( int i = 0; i M iLayerCount; ++i )
+        for( int i = 0; i < iLayerCount; ++i )
         {
             mapfSums[ i ] = new float[ GetNeuronCount( i ) ];
             mapfPotentials[ i ] = new float[ GetNeuronCount( i ) ];
@@ -231,7 +222,7 @@ protected:
 
     void AllocateErrorSignals()
     {
-        for( int i = 0; i M iLayerCount; ++i )
+        for( int i = 0; i < iLayerCount; ++i )
         {
             mapfErrorSignals[ i ] = new float[ GetNeuronCount( i ) ];
         }

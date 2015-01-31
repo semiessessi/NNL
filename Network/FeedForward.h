@@ -20,24 +20,15 @@ public:
 
     }
 
-    void AddLayer( Layer& xLayer )
+    ~FeedForwardNetwork()
     {
-        if( mapxLayers.size() > 0 )
-        {
-            Layer& xPrevious = *( mapxLayers.back() );
-            // connect all the neurons to each other
-            for( int i = 0; i < xLayer.GetNeuronCount(); ++i )
-            {
-                for( int j = 0; j < xPrevious.GetNeuronCount(); ++j )
-                {
-                    NeuronBase* pxNew = xLayer.GetNeuron( i );
-                    NeuronBase* pxOld = xPrevious.GetNeuron( j );
-                    pxNew->SetInputVirtual( j, pxOld );
-                }
-            }
-        }
-        mapxLayers.push_back( &xLayer );
+        DeleteOwnedLayers();
     }
+
+    void AddLayer( Layer& xLayer );
+
+    void Load();
+    void Save();
 
     void Cycle()
     {
@@ -54,8 +45,18 @@ public:
 
 private:
 
-    std::vector< Layer* > mapxLayers;
+    void DeleteOwnedLayers()
+    {
+        for( int i = 0; i < static_cast< int >( mapxOwnedLayers.size( ) ); ++i )
+        {
+            delete mapxOwnedLayers[ i ];
+        }
 
+        mapxOwnedLayers.clear();
+    }
+
+    std::vector< Layer* > mapxLayers;
+    std::vector< Layer* > mapxOwnedLayers;
 };
 
 }

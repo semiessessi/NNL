@@ -20,6 +20,9 @@ public:
     virtual void SetInputVirtual( const int iIndex, NeuronBase* const pxInput ) = 0;
 
     float& GetResult() { return mfAxonPotential; }
+    
+    virtual float* GetWeightPointer() = 0;
+    virtual int GetInputCount() const = 0;
 
 protected:
 
@@ -84,6 +87,9 @@ public:
         RandomBackPropagator( fPotential, fLearningRate );
     }
 
+    virtual float* GetWeightPointer() { return mafWeights; }
+    virtual int GetInputCount() const { return iInputCount; }
+
 protected:
 
     float EvaluateAxon( const float* pfWeights )
@@ -138,7 +144,7 @@ protected:
         const float fLearningRatedDiff = fLearningRate * fDiff;
         for( int i = 0; i < iInputCount; ++i )
         {
-            if( mapxInputs[ i ]->GetResult( ) != 0.0f )
+            if( mapxInputs[ i ]->GetResult() != 0.0f )
             {
                 mafWeights[ i ] += fLearningRatedDiff
                     / mapxInputs[ i ]->GetResult();
