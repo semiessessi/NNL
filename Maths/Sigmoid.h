@@ -15,8 +15,8 @@ static inline float Sigmoid( const float fX )
 
 static inline float SigmoidDerivative( const float fX )
 {
-    const float fSquareRootDenominator = expf( fX ) + 1.0f;
-    return expf( fX ) / ( fSquareRootDenominator * fSquareRootDenominator );
+    const float fSigmoid = Sigmoid( fX );
+    return fSigmoid * ( 1.0f - fSigmoid );
 }
 
 }
