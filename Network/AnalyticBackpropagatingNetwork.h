@@ -34,6 +34,16 @@ public:
     const int GetLayerCount() const { return iLayerCount; }
     float GetOutput( const int iIndex ) const { return mapfPotentials[ iLayerCount - 1 ][ iIndex ]; }
 
+    void Load( const char* const /*szPath*/ )
+    {
+        // SE - TODO: ...
+    }
+
+    void Save( const char* const /*szPath*/ )
+    {
+        // SE - TODO: ...
+    }
+
     float* FeedForward( const float* const pfInputs, float ( * const pfnSummingFunction )( const float ) )
     {
         for( int i = 0; i < iInputCount; ++i )
