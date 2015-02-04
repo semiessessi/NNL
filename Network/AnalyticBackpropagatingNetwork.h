@@ -136,8 +136,7 @@ protected:
                 if( iLayer != 0 )
                 {
                     // accumulate some error signal
-                    mapfErrorSignals[ iLayer - 1 ][ j ] += fErrorSignal
-                        / ( static_cast< float >( iLayerInputCount ) * mapfWeights[ iLayer ][ j + i * iLayerInputCount ] );
+                    mapfErrorSignals[ iLayer - 1 ][ j ] += fErrorSignal * mapfWeights[ iLayer ][ j + i * iLayerInputCount ];
                 }
             }
 
