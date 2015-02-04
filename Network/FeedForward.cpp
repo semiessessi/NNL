@@ -28,11 +28,11 @@ void FeedForwardNetwork::AddLayer( Layer& xLayer )
     mapxLayers.push_back( &xLayer );
 }
 
-void FeedForwardNetwork::Load()
+void FeedForwardNetwork::Load( const char* const szPath )
 {
     printf( "Loading...\r\n" );
 
-    FILE* pxFile = fopen( "data.dat", "rb" );
+    FILE* pxFile = fopen( szPath, "rb" );
     if( pxFile )
     {
         const unsigned char aucMagic[] = { 'C', 'N', 'N', 'D' };
@@ -81,11 +81,11 @@ void FeedForwardNetwork::Load()
     }
 }
 
-void FeedForwardNetwork::Save()
+void FeedForwardNetwork::Save( const char* const szPath )
 {
     printf( "Saving...\r\n" );
 
-    FILE* pxFile = fopen( "data.dat", "wb" );
+    FILE* pxFile = fopen( szPath, "wb" );
     if( !pxFile )
     {
         printf( "Failed to open file.\r\n" );

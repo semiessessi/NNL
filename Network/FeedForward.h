@@ -27,8 +27,8 @@ public:
 
     void AddLayer( Layer& xLayer );
 
-    void Load();
-    void Save();
+    void Load( const char* const szPath );
+    void Save( const char* const szPath );
 
     void Cycle()
     {
