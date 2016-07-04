@@ -39,21 +39,22 @@ private:
         
         // SE: so, something that mystifies me is multiplying by the result/weight
         // instead of dividing... but it does work in practice
+        const float fMultiplier = fLearningRate * fErrorSignal;
         for( int i = 0; i < iInputCount; ++i )
         {
             // dP/dw[i] = dP/du du/dw[ i ] = S'( w[ i ] x[ i ] + c ) x[ i ]
-            this->mafWeights[ i ] += fLearningRate * fErrorSignal * this->mapxInputs[ i ]->GetResult();
+            mafWeights[ i ] += fMultiplier * mapxInputs[ i ]->GetResult( );
         }
 
         // dP/db = dP/du du/db = S'( b + c )
-        this->mfBias += fLearningRate * fErrorSignal;
+        mfBias += fLearningRate * fErrorSignal;
 
         for( int i = 0; i < iInputCount; ++i )
         {
-            const float fBetterInput = this->mapxInputs[ i ]->GetResult()
-                + fErrorSignal * this->mafWeights[ i ];
+            const float fBetterInput = mapxInputs[ i ]->GetResult()
+                + fErrorSignal * mafWeights[ i ];
             
-            this->mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
+            mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
         }
     }
 
