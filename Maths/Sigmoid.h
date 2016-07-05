@@ -27,12 +27,12 @@ public:
 
     static float Evaluate( const float fSum )
     {
-        return Sigmoid( fSum );
+        return 2.0f * Sigmoid( fSum ) - 1.0f;
     }
     
     static float Derivative( const float fSum )
     {
-        return SigmoidDerivative( fSum );
+        return 2.0f * SigmoidDerivative( fSum );
     }
 
 };

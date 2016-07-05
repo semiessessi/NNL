@@ -9,13 +9,13 @@ namespace NNL
 static inline float SmoothStep( const float fX )
 {
     const float fClamped = ( fX > 1.0f ) ? 1.0f : ( ( fX < -0.0f ? 0.0f : fX ) );
-    return ( 3.0f - 2.0 * fClamped ) * fClamped * fClamped;
+    return ( 3.0f - 2.0f * fClamped ) * fClamped * fClamped;
 }
 
 static inline float SmoothStepDerivative( const float fX )
 {
     const float fClamped = ( fX > 1.0f ) ? 1.0f : ( ( fX < -0.0f ? 0.0f : fX ) );
-    return ( 6.0f - 6.0 * fClamped ) * fClamped;
+    return ( 6.0f - 6.0f * fClamped ) * fClamped;
 }
 
 static inline float SmootherStep( const float fX )

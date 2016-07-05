@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Cranium Software
+// Copyright (c) 2015-2016 Cranium Software
 
 #ifndef NEURON_H
 #define NEURON_H
@@ -90,6 +90,9 @@ public:
     virtual float* GetWeightPointer() { return mafWeights; }
     virtual int GetInputCount() const { return iInputCount; }
 
+    void SetBias( const float fBias ) { mfBias = fBias; }
+    float GetBias() const { return mfBias; }
+
 protected:
 
     float EvaluateAxon( const float* pfWeights )
@@ -100,13 +103,13 @@ protected:
     // SE - NOTE: this is a hotspot on the critical path
     float EvaluateSum( const float* pfWeights )
     {
-        float fSum = mfBias;
+        float fSum = 0.0f; // don't add bias at start to save precision
         for( int i = 0; i < iInputCount; ++i )
         {
             fSum += mapxInputs[ i ]->GetResult() * pfWeights[ i ];
         }
         
-        return fSum;
+        return fSum + mfBias;
     }
 
     void RandomBackPropagator( const float fPotential, const float fLearningRate )

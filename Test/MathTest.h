@@ -1,3 +1,5 @@
+// Copyright (c) 2016 Cranium Software
+
 #ifndef NNL_MATH_TEST_H
 #define NNL_MATH_TEST_H
 

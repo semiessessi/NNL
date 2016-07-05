@@ -1,6 +1,8 @@
+// Copyright (c) 2016 Cranium Software
+
 #include <cstdio>
 
-#include "FastNetworkTest.h"
+#include "OptimisedNetworkTest.h"
 #include "MathTest.h"
 
 int main( const int, const char* const* const )
@@ -10,6 +12,11 @@ int main( const int, const char* const* const )
     do
     {
         if( !CheckSummingFunctionRange() )
+        {
+            break;
+        }
+        
+        if( !OptimisedNetworkTest() )
         {
             break;
         }
