@@ -1,5 +1,6 @@
 #include <cstdio>
 
+#include "FastNetworkTest.h"
 #include "MathTest.h"
 
 int main( const int, const char* const* const )
