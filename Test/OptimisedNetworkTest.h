@@ -56,15 +56,39 @@ bool OptimisedNetworkTest()
             const float fNeuronResult = xSigmoid.GetResult();
             const float fNetworkResult = xNetwork.GetOutputValues()[ 0 ];
             const float fError = std::abs( fNeuronResult - fNetworkResult );
-            if( fError > 0.05f )
+            if( fError > 0.005f )
             {
-                printf( "Error: test failed since error value was too great (%f)\n", std::abs( fNeuronResult - fNetworkResult ) );
+                printf( "Error: test failed since error value was too great (%f)\n", fError );
                 return false;
             }
         }
     }
+    
+    puts( "Optimised network passed most basic of tests - one layer, one neuron, forward cycles." );
+    
+    // test back cycling
+    for( float fTestValue = -100.0f; fTestValue <= 100.0f; fTestValue += 0.1f )
+    {
+        for( float fTestRate = 0.0005f; fTestRate < 1.0f; fTestRate *= 2.5f )
+        {
+            xSigmoid.BackCycleVirtual( fTestValue, fTestRate );
+            xNetwork.BackCycle( &fTestValue, fTestRate );
+            
+            for( int i = 0; i < 2; ++i )
+            {
+                const float fNeuronWeight = xSigmoid.GetWeightPointer()[ i ];
+                const float fNetworkWeight = xNetwork.GetWeights( 0 )[ i ];
+                const float fError = std::abs( fNeuronWeight - fNetworkWeight );
+                if( fError > 0.05f )
+                {
+                    printf( "Error: test failed since error value was too great (%f)\n", fError );
+                    return false;
+                }
+            }
+        }
+    }
 
-    puts( "Optimised network passed most basic of tests." );
+    puts( "Optimised network passed most basic of tests - one layer, one neuron, backward cycles." );
     
     return true;
 }

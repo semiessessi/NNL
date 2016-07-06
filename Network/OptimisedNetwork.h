@@ -270,24 +270,70 @@ private:
         }
     }
 
+    /*
+    void BackPropagate( const float fPotential, const float fLearningRate )
+    {
+        const float fDiff = fPotential - this->mfAxonPotential;
+        const float fOriginalSum = this->EvaluateSum( this->mafWeights );
+        const float fDerivative = static_cast< Implementation* >( this )->DerivativeSummingFunction( fOriginalSum );
+        const float fErrorSignal = fDiff * fDerivative;
+
+        // SE: so, something that mystifies me is multiplying by the result/weight
+        // instead of dividing... but it does work in practice
+        const float fMultiplier = fLearningRate * fErrorSignal;
+        for( int i = 0; i < iInputCount; ++i )
+        {
+            // dP/dw[i] = dP/du du/dw[ i ] = S'( w[ i ] x[ i ] + c ) x[ i ]
+            mafWeights[ i ] += fMultiplier * mapxInputs[ i ]->GetResult( );
+        }
+
+        // dP/db = dP/du du/db = S'( b + c )
+        mfBias += fLearningRate * fErrorSignal;
+
+        for( int i = 0; i < iInputCount; ++i )
+        {
+            const float fBetterInput = mapxInputs[ i ]->GetResult()
+                + fErrorSignal * mafWeights[ i ];
+
+            mapxInputs[ i ]->BackCycleVirtual( fBetterInput, fLearningRate );
+        }
+    }
+    */
+
     void BackCycleSequential( const float* const pfExpectedOutputs, const float fLearningRate )
     {
         // for each neuron
         int iWeightOffset = 0;
         for( int iNeuronIndex = 0; iNeuronIndex < iNeuronCount; ++iNeuronIndex )
-        {
-            // for each output, back propogate...
-            const float fScaledError = fLearningRate * ( pfExpectedOutputs[ iNeuronIndex ] - mafAxonValues[ iNeuronIndex ] );
-
+        {            
+            // re-create sum (SE - TODO: this is wasteful - cache it somewhere in prepare?)
+            float fSum = 0.0f;
             for( int iInputIndex = 0; iInputIndex < Layer::kiInputCount; ++iInputIndex )
             {
-                
+                fSum += mafInputValues[ iInputIndex ] * mafWeights[ iWeightOffset + iInputIndex ];
             }
 
-            iWeightOffset += Layer::kiInputCount
+            fSum += mafBiases[ iNeuronIndex ];
+
+            // for each output, back propogate...
+            const float fDerivative = Layer::SummingFunction::Derivative( fSum );
+            const float fScaledError = fDerivative * fLearningRate * ( pfExpectedOutputs[ iNeuronIndex ] - mafAxonValues[ iNeuronIndex ] );
+            for( int iInputIndex = 0; iInputIndex < Layer::kiInputCount; ++iInputIndex )
+            {
+                // SE: so, something that mystifies me is multiplying by the result/weight instead of dividing
+                mafWeights[ iWeightOffset + iInputIndex ] += fScaledError * mafInputValues[ iInputIndex ];
+            }
+
+            // adjust the 'inputs' for the next layer (if it exists)
+            for( int iInputIndex = 0; iInputIndex < Layer::kiInputCount; ++iInputIndex )
+            {
+                mafInputValues[ iInputIndex ] += fScaledError;
+            }
+
+            iWeightOffset += Layer::kiInputCount;
         }
     }
-    
+
 private:
 
     float mafWeights[ Layer::kiTotalInputCount ];
