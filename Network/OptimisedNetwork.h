@@ -43,28 +43,61 @@ public:
         const float* const pfFirstLayerOutputs = mxFirstLayerNetwork.GetOutputValues();
         mxRemainingLayersNetwork.Cycle( pfFirstLayerOutputs );
     }
+
+    void PrepareBackCycle( const float* const pfInputs )
+    {
+        mxFirstLayerNetwork.SetInputValues( pfInputs );
+        mxRemainingLayersNetwork.PrepareBackCycle( mxFirstLayerNetwork.GetOutputValues() );
+    }
+
+    void BackCycle( const float* const pfExpectedOutputs, const float fLearningRate )
+    {
+        mxRemainingLayersNetwork.BackCycle( pfExpectedOutputs, fLearningRate );
+        mxFirstLayerNetwork.BackCycle( mxRemainingLayersNetwork.GetInputValues(), fLearningRate );
+    }
     
     const float* GetOutputValues() const
     {
         return mxRemainingLayersNetwork.GetOutputValues();
     }
-    
-    // SE - TODO: will this optimise or does it require the template metaprogramming treatment?
-    float* GetWeights( const int iLayer )
+
+    float* GetInputValues( const int iLayer = 0 )
     {
         if( iLayer == 0 )
         {
-            return mxFirstLayerNetwork.GetWeights( iLayer );
+            return mxFirstLayerNetwork.GetInputValues();
+        }
+
+        return mxRemainingLayersNetwork.GetInputValues( iLayer - 1 );
+    }
+
+    void SetInputValues( const float* const pfSourceValues, const int iLayer = 0 )
+    {
+        if( iLayer == 0 )
+        {
+            mxFirstLayerNetwork.SetInputValues( pfSourceValues );
+            return;
+        }
+
+        mxRemainingLayersNetwork.SetInputValues( pfSourceValues, iLayer - 1 );
+    }
+    
+    // SE - TODO: will this optimise or does it require the template metaprogramming treatment?
+    float* GetWeights( const int iLayer = 0 )
+    {
+        if( iLayer == 0 )
+        {
+            return mxFirstLayerNetwork.GetWeights();
         }
         
         return mxRemainingLayersNetwork.GetWeights( iLayer - 1 );
     }
 
-    float* GetBiases( const int iLayer )
+    float* GetBiases( const int iLayer = 0 )
     {
         if( iLayer == 0 )
         {
-            return mxFirstLayerNetwork.GetBiases( iLayer );
+            return mxFirstLayerNetwork.GetBiases();
         }
 
         return mxRemainingLayersNetwork.GetBiases( iLayer - 1 );
@@ -105,9 +138,51 @@ public:
         */
     }
 
+    void PrepareBackCycle( const float* const pfInputs )
+    {
+        // SE - TODO: thread even this copy?
+        SetInputValues( pfInputs );
+    }
+
+    void BackCycle( const float* const pfExpectedOutputs, const float fLearningRate )
+    {
+        // SE - TODO: thread switch over magic number...
+        //if( Layer::kiNeuronCount <= 32 )
+        {
+            BackCycleSequential( pfExpectedOutputs, fLearningRate );
+        }
+        /*
+        else
+        {
+            BackCycleThreaded( pfExpectedOutputs, fLearningRate );
+        }
+        */
+    }
+
     const float* GetOutputValues() const { return mafAxonValues; }
 
-    float* GetWeights( const int iLayer )
+    float* GetInputValues( const int iLayer = 0 )
+    {
+        if( iLayer == 0 )
+        {
+            return mafInputValues;
+        }
+
+        return mxRemainingLayersNetwork.GetInputValues( iLayer - 1 );
+    }
+
+    void SetInputValues( const float* const pfSourceValues, const int iLayer = 0 )
+    {
+        if( iLayer == 0 )
+        {
+            for( int i = 0; i < Layer::kiInputCount; ++i )
+            {
+                mafInputValues[ i ] = pfSourceValues[ i ];
+            }
+        }
+    }
+
+    float* GetWeights( const int iLayer = 0 )
     {
         if( iLayer == 0 )
         {
@@ -117,7 +192,7 @@ public:
         return 0;
     }
 
-    float* GetBiases( const int iLayer )
+    float* GetBiases( const int iLayer = 0 )
     {
         if( iLayer == 0 )
         {
@@ -194,12 +269,31 @@ private:
             mafAxonValues[ iNeuronIndex ] = Layer::SummingFunction::Evaluate( fSum );
         }
     }
+
+    void BackCycleSequential( const float* const pfExpectedOutputs, const float fLearningRate )
+    {
+        // for each neuron
+        int iWeightOffset = 0;
+        for( int iNeuronIndex = 0; iNeuronIndex < iNeuronCount; ++iNeuronIndex )
+        {
+            // for each output, back propogate...
+            const float fScaledError = fLearningRate * ( pfExpectedOutputs[ iNeuronIndex ] - mafAxonValues[ iNeuronIndex ] );
+
+            for( int iInputIndex = 0; iInputIndex < Layer::kiInputCount; ++iInputIndex )
+            {
+                
+            }
+
+            iWeightOffset += Layer::kiInputCount
+        }
+    }
     
 private:
 
     float mafWeights[ Layer::kiTotalInputCount ];
     float mafBiases[ Layer::kiNeuronCount ];
     float mafAxonValues[ Layer::kiNeuronCount ];
+    float mafInputValues[ Layer::kiInputCount ];
     
 };
 
